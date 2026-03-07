@@ -1,0 +1,76 @@
+{
+  "chest_pain_differentials": [
+    {
+      "id": "STEMI",
+      "name": "ST-Elevation Myocardial Infarction (STEMI)",
+      "category": "cardiac",
+      "keywords": ["stemi", "st elevation", "heart attack", "myocardial infarction", "mi"]
+    },
+    {
+      "id": "NSTEMI",
+      "name": "Non-ST-Elevation Myocardial Infarction (NSTEMI)",
+      "category": "cardiac",
+      "keywords": ["nstemi", "non st", "non-st elevation", "nstemi"]
+    },
+    {
+      "id": "UNSTABLE_ANGINA",
+      "name": "Unstable Angina",
+      "category": "cardiac",
+      "keywords": ["unstable angina", "acs", "acute coronary syndrome"]
+    },
+    {
+      "id": "STABLE_ANGINA",
+      "name": "Stable Angina",
+      "category": "cardiac",
+      "keywords": ["stable angina", "angina pectoris"]
+    },
+    {
+      "id": "AORTIC_DISSECTION",
+      "name": "Aortic Dissection",
+      "category": "vascular",
+      "keywords": ["aortic dissection", "dissection", "aorta"]
+    },
+    {
+      "id": "PE",
+      "name": "Pulmonary Embolism",
+      "category": "pulmonary",
+      "keywords": ["pulmonary embolism", "pe", "blood clot lung"]
+    },
+    {
+      "id": "PERICARDITIS",
+      "name": "Pericarditis",
+      "category": "cardiac",
+      "keywords": ["pericarditis", "pericardial"]
+    },
+    {
+      "id": "GERD",
+      "name": "GERD / Esophageal Reflux",
+      "category": "gastrointestinal",
+      "keywords": ["gerd", "reflux", "heartburn", "esophageal"]
+    },
+    {
+      "id": "MUSCULOSKELETAL",
+      "name": "Musculoskeletal Chest Pain",
+      "category": "musculoskeletal",
+      "keywords": ["musculoskeletal", "costochondritis", "muscle strain"]
+    },
+    {
+      "id": "PNEUMOTHORAX",
+      "name": "Pneumothorax",
+      "category": "pulmonary",
+      "keywords": ["pneumothorax", "collapsed lung"]
+    },
+    {
+      "id": "PNEUMONIA",
+      "name": "Pneumonia / Pleuritis",
+      "category": "pulmonary",
+      "keywords": ["pneumonia", "pleuritis", "pleurisy"]
+    },
+    {
+      "id": "ANXIETY",
+      "name": "Anxiety / Panic Attack",
+      "category": "psychiatric",
+      "keywords": ["anxiety", "panic", "panic attack"]
+    }
+  ]
+}
