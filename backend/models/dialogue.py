@@ -1,17 +1,20 @@
 """
-backend/models/dialogue.py + evaluation.py combined
+backend/models/dialogue.py
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
+from backend.models.evaluation import (
+    SessionEvaluation, HPICompletenessScore, CommunicationScore,
+    RepetitivenessScore, DiagnosticScore, ClinicalReasoningScore,
+)
 
 class Speaker(str, Enum):
     DOCTOR = "doctor"
     PATIENT = "patient"
     SYSTEM = "system"
-
 
 class ToneScore(BaseModel):
     empathy_score: float = 0.0
@@ -26,22 +29,18 @@ class ToneScore(BaseModel):
     @property
     def composite_score(self) -> float:
         return (
-            self.empathy_score * 0.35 +
-            self.warmth_score * 0.25 +
-            self.respect_score * 0.20 +
-            self.clarity_score * 0.10 +
+            self.empathy_score * 0.35 + self.warmth_score * 0.25 +
+            self.respect_score * 0.20 + self.clarity_score * 0.10 +
             self.professional_score * 0.10
         )
-
 
 class DialogueTurn(BaseModel):
     turn_id: int
     speaker: Speaker
     text: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    tone_score: Optional[ToneScore] = None  # only for doctor turns
+    tone_score: Optional[ToneScore] = None
     audio_path: Optional[str] = None
-
 
 class SessionTranscript(BaseModel):
     session_id: str
@@ -57,69 +56,6 @@ class SessionTranscript(BaseModel):
             lines.append(f"[{prefix}]: {turn.text}")
         return "\n".join(lines)
 
-
-# ── Evaluation Models ────────────────────────────────────────────────
-
-class HPICompletenessScore(BaseModel):
-    score: float
-    covered_components: List[str]
-    missed_components: List[str]
-    personal_info_collected: bool
-    notes: str
-
-
-class CommunicationScore(BaseModel):
-    average_empathy_score: float
-    average_clarity_score: float
-    average_warmth_score: float
-    tone_consistency: str
-    best_moment: Optional[str]
-    worst_moment: Optional[str]
-    notes: str
-
-
-class RepetitivenessScore(BaseModel):
-    score: float
-    repeated_questions_count: int
-    repeated_questions: List[str]
-    notes: str
-
-
-class DiagnosticScore(BaseModel):
-    score: float
-    primary_diagnosis_correct: bool
-    correct_differentials_named: int
-    total_correct_differentials: int
-    ordering_correct: bool
-    missed_critical_diagnoses: List[str]
-    notes: str
-
-
-class ClinicalReasoningScore(BaseModel):
-    score: float
-    red_flags_identified: List[str]
-    red_flags_missed: List[str]
-    systematic_approach: bool
-    notes: str
-
-
-class SessionEvaluation(BaseModel):
-    session_id: str
-    evaluated_at: datetime = Field(default_factory=datetime.utcnow)
-    overall_score: float
-    grade: str
-    hpi_completeness: HPICompletenessScore
-    communication_quality: CommunicationScore
-    repetitiveness: RepetitivenessScore
-    diagnostic_accuracy: DiagnosticScore
-    clinical_reasoning: ClinicalReasoningScore
-    strengths: List[str]
-    areas_for_improvement: List[str]
-    detailed_feedback: str
-
-
-# ── Request/Response schemas ─────────────────────────────────────────
-
 class StartSessionRequest(BaseModel):
     trainee_id: Optional[str] = "anonymous"
     trainee_name: Optional[str] = "Trainee Doctor"
@@ -131,7 +67,7 @@ class StartSessionResponse(BaseModel):
 
 class DoctorInputRequest(BaseModel):
     session_id: str
-    doctor_text: str  # transcribed doctor speech
+    doctor_text: str
 
 class DoctorInputResponse(BaseModel):
     session_id: str
@@ -144,7 +80,7 @@ class DoctorInputResponse(BaseModel):
 
 class DifferentialRequest(BaseModel):
     session_id: str
-    doctor_differential_text: str  # doctor's verbal differential diagnosis
+    doctor_differential_text: str
 
 class EvaluationResponse(BaseModel):
     session_id: str

@@ -1,11 +1,8 @@
 """
 backend/core/gemini_client.py
-Wrapper around Google Gemini API for all LLM calls.
+Gemini API wrapper — compatible with google-generativeai >= 0.7
 """
-import json
-import re
-import sys
-import os
+import json, re, sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 import google.generativeai as genai
@@ -16,76 +13,51 @@ from config.settings import settings
 class GeminiClient:
     def __init__(self):
         genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel(settings.gemini_model)
-        self.safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
-        logger.info(f"GeminiClient initialized with model: {settings.gemini_model}")
+        self.model_name = settings.gemini_model  # e.g. "gemini-1.5-pro"
+        logger.info(f"GeminiClient ready — model: {self.model_name}")
+
+    def _get_model(self, temperature: float, max_tokens: int):
+        return genai.GenerativeModel(
+            model_name=self.model_name,
+            generation_config=genai.types.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            ),
+        )
 
     async def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
-        """Generate a free-form text response."""
         try:
-            generation_config = genai.types.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=512,
-            )
-            response = await self.model.generate_content_async(
-                prompt,
-                generation_config=generation_config,
-                safety_settings=self.safety_settings,
-            )
+            model = self._get_model(temperature, 512)
+            response = await model.generate_content_async(prompt)
             return response.text.strip()
         except Exception as e:
-            logger.error(f"Gemini text generation error: {e}")
+            logger.error(f"Gemini generate_text error: {e}")
             raise
 
     async def generate_json(self, prompt: str, temperature: float = 0.2) -> dict:
-        """Generate a JSON response and parse it."""
+        raw = ""
         try:
-            generation_config = genai.types.GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=1024,
-            )
-            response = await self.model.generate_content_async(
-                prompt,
-                generation_config=generation_config,
-                safety_settings=self.safety_settings,
-            )
+            model = self._get_model(temperature, 1024)
+            response = await model.generate_content_async(prompt)
             raw = response.text.strip()
-            # Strip markdown code fences if present
             raw = re.sub(r"^```(?:json)?\s*", "", raw)
             raw = re.sub(r"\s*```$", "", raw)
             return json.loads(raw)
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error from Gemini: {e}\nRaw: {raw[:500]}")
+            logger.error(f"JSON parse error: {e} | raw: {raw[:300]}")
             return {}
         except Exception as e:
-            logger.error(f"Gemini JSON generation error: {e}")
+            logger.error(f"Gemini generate_json error: {e}")
             raise
 
-    async def generate_patient_dialogue(
-        self,
-        system_prompt: str,
-    ) -> str:
-        """Generate patient dialogue using a detailed system prompt."""
+    async def generate_patient_dialogue(self, system_prompt: str) -> str:
         try:
-            generation_config = genai.types.GenerationConfig(
-                temperature=0.85,   # slightly higher for natural variation
-                max_output_tokens=256,
-            )
-            response = await self.model.generate_content_async(
-                system_prompt,
-                generation_config=generation_config,
-                safety_settings=self.safety_settings,
-            )
+            model = self._get_model(0.85, 256)
+            response = await model.generate_content_async(system_prompt)
             return response.text.strip()
         except Exception as e:
             logger.error(f"Patient dialogue generation error: {e}")
             raise
 
 
-# Singleton instance
 gemini_client = GeminiClient()
