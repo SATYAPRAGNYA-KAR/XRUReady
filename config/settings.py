@@ -13,7 +13,8 @@ BASE_DIR = Path(__file__).parent.parent
 class Settings(BaseSettings):
     # Gemini
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-pro"
+    # gemini_model: str = "gemini-1.5-pro"
+    gemini_model: str = "gemini-2.5-flash"
 
     # Google Cloud
     google_application_credentials: str = ""

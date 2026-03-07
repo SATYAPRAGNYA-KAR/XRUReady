@@ -12,8 +12,9 @@ from typing import List
 from backend.core.gemini_client import gemini_client
 from backend.core.session_manager import ConsultationSession
 from backend.core.prompts import EVALUATION_PROMPT, DIFFERENTIAL_EXTRACTION_PROMPT
-from backend.models.dialogue import (
-    SessionEvaluation, Speaker, ToneScore,
+from backend.models.dialogue import Speaker, ToneScore
+from backend.models.evaluation import (
+    SessionEvaluation,
     HPICompletenessScore, CommunicationScore, RepetitivenessScore,
     DiagnosticScore, ClinicalReasoningScore,
 )

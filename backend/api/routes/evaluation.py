@@ -11,6 +11,7 @@ from loguru import logger
 from backend.core.session_manager import session_manager
 from backend.services.evaluator import session_evaluator
 from backend.models.dialogue import EvaluationResponse
+from backend.models.evaluation import SessionEvaluation
 
 router = APIRouter(prefix="/evaluation", tags=["Evaluation"])
 
