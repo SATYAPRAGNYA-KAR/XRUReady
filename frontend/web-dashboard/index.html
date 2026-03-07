@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XR Medical Training — Supervisor Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #0a0e1a; color: #e2e8f0; min-height: 100vh; }
+  
+  header { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 16px 32px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 20px; font-weight: 700; color: #38bdf8; }
+  .badge { background: #064e3b; color: #34d399; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge.red { background: #450a0a; color: #f87171; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; padding: 24px 32px; }
+  .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; }
+  .card h2 { font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
+
+  .big-num { font-size: 48px; font-weight: 800; color: #38bdf8; line-height: 1; }
+  .unit { font-size: 18px; color: #64748b; }
+
+  .progress-wrap { margin: 8px 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
+  .bar { background: #1e293b; border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width 0.5s; }
+
+  .tone-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+
+  .transcript { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; margin: 0 32px 24px; padding: 20px; max-height: 350px; overflow-y: auto; }
+  .transcript h2 { font-size: 14px; color: #64748b; text-transform: uppercase; margin-bottom: 16px; }
+  .turn { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; line-height: 1.6; }
+  .turn.doctor { background: #1e3a5f; border-left: 3px solid #38bdf8; }
+  .turn.patient { background: #1a2a1a; border-left: 3px solid #34d399; }
+  .turn .speaker { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .turn.doctor .speaker { color: #38bdf8; }
+  .turn.patient .speaker { color: #34d399; }
+  .turn .tone-badge { float: right; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+  .hpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hpi-item { background: #1e293b; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+  .hpi-item.done { background: #064e3b; }
+  .hpi-item .label { color: #64748b; font-size: 11px; text-transform: uppercase; }
+  .hpi-item .value { color: #e2e8f0; margin-top: 2px; }
+  .hpi-item.done .value { color: #34d399; }
+
+  #session-id-input { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 8px 12px; border-radius: 8px; font-size: 14px; width: 300px; }
+  #connect-btn { background: #0ea5e9; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 8px; }
+  #connect-btn:hover { background: #0284c7; }
+
+  .status-row { display: flex; align-items: center; gap: 12px; padding: 0 32px 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏥 XR Medical Training — Supervisor Dashboard</h1>
+  <span class="badge" id="connection-badge">DISCONNECTED</span>
+</header>
+
+<div class="status-row">
+  <input type="text" id="session-id-input" placeholder="Session ID (paste from Unity)">
+  <button id="connect-btn" onclick="connectToSession()">Connect</button>
+  <span style="color:#64748b; font-size:13px" id="phase-display">Phase: —</span>
+</div>
+
+<div class="grid">
+
+  <!-- HPI Coverage -->
+  <div class="card">
+    <h2>📋 HPI Coverage (OLD CARTS)</h2>
+    <div class="big-num" id="hpi-pct">0<span class="unit">%</span></div>
+    <div style="margin-top:16px" id="hpi-items">
+      <div class="hpi-grid" id="hpi-grid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Tone Meter -->
+  <div class="card">
+    <h2>💬 Doctor Tone & Empathy</h2>
+    <div style="text-align:center; margin-bottom:16px">
+      <div class="big-num" id="tone-score">—</div>
+      <div id="tone-label" style="font-size:18px; color:#64748b; margin-top:4px">Awaiting input</div>
+    </div>
+    <div id="tone-history"></div>
+  </div>
+
+  <!-- Session Stats -->
+  <div class="card">
+    <h2>📊 Session Stats</h2>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Turns taken</span><span id="turn-count">0</span></div>
+    </div>
+    <div class="progress-wrap" style="margin-top:16px">
+      <div class="progress-label"><span>Personal info collected</span><span id="personal-info">—</span></div>
+    </div>
+    <div class="progress-wrap" style="margin-top:16px">
+      <div class="progress-label"><span>Missing OLD CARTS</span></div>
+      <div id="missing-fields" style="font-size:13px; color:#f87171; margin-top:4px">—</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Live Transcript -->
+<div class="transcript">
+  <h2>🗣️ Live Transcript</h2>
+  <div id="transcript-content">
+    <p style="color:#334155; font-size:14px">Connect a session to see the live transcript...</p>
+  </div>
+</div>
+
+<script>
+  const BASE = 'http://localhost:8000';
+  let sessionId = null;
+  let pollInterval = null;
+  let transcriptRendered = 0;
+
+  const TONE_COLORS = {
+    empathetic:  '#34d399',
+    reassuring:  '#38bdf8',
+    neutral:     '#94a3b8',
+    cold:        '#fb923c',
+    abrupt:      '#f87171',
+    dismissive:  '#ef4444',
+  };
+
+  const OLD_CARTS = [
+    { key: 'onset',               label: 'Onset' },
+    { key: 'location',            label: 'Location' },
+    { key: 'duration',            label: 'Duration' },
+    { key: 'characteristics',     label: 'Characteristics' },
+    { key: 'aggravating_factors', label: 'Aggravating' },
+    { key: 'alleviating_factors', label: 'Alleviating' },
+    { key: 'radiation',           label: 'Radiation' },
+    { key: 'timing',              label: 'Timing' },
+    { key: 'associated_symptoms', label: 'Symptoms' },
+  ];
+
+  function connectToSession() {
+    sessionId = document.getElementById('session-id-input').value.trim();
+    if (!sessionId) return alert('Enter a session ID');
+    document.getElementById('connection-badge').textContent = 'CONNECTED';
+    document.getElementById('connection-badge').className = 'badge';
+    clearInterval(pollInterval);
+    transcriptRendered = 0;
+    pollInterval = setInterval(pollSession, 2000);
+    pollSession();
+  }
+
+  async function pollSession() {
+    try {
+      const [statusRes, transcriptRes] = await Promise.all([
+        fetch(`${BASE}/session/${sessionId}/status`),
+        fetch(`${BASE}/session/${sessionId}/transcript`),
+      ]);
+      if (!statusRes.ok) throw new Error('Session not found');
+      const status = await statusRes.json();
+      const transcript = await transcriptRes.json();
+      updateUI(status, transcript);
+    } catch(e) {
+      document.getElementById('connection-badge').textContent = 'ERROR';
+      document.getElementById('connection-badge').className = 'badge red';
+    }
+  }
+
+  function updateUI(status, transcript) {
+    // Phase
+    document.getElementById('phase-display').textContent = `Phase: ${status.phase}`;
+    document.getElementById('turn-count').textContent = status.turn_count;
+    document.getElementById('hpi-pct').innerHTML = `${Math.round(status.hpi_coverage_percent)}<span class="unit">%</span>`;
+
+    // HPI grid
+    const hpiGrid = document.getElementById('hpi-grid');
+    hpiGrid.innerHTML = '';
+    OLD_CARTS.forEach(({key, label}) => {
+      const covered = status.hpi_covered_fields.includes(key);
+      hpiGrid.innerHTML += `
+        <div class="hpi-item ${covered ? 'done' : ''}">
+          <div class="label">${label}</div>
+          <div class="value">${covered ? '✓ Collected' : 'Not asked'}</div>
+        </div>`;
+    });
+
+    // Missing fields
+    document.getElementById('missing-fields').textContent =
+      status.hpi_missing_fields.length ? status.hpi_missing_fields.join(', ') : '✓ All collected';
+
+    // Tone (from latest doctor turn)
+    const doctorTurns = transcript.turns.filter(t => t.speaker === 'doctor' && t.tone);
+    if (doctorTurns.length) {
+      const latest = doctorTurns[doctorTurns.length - 1];
+      document.getElementById('tone-score').textContent = latest.tone.composite_score.toFixed(1);
+      const label = latest.tone.label;
+      document.getElementById('tone-label').textContent = label;
+      document.getElementById('tone-label').style.color = TONE_COLORS[label] || '#94a3b8';
+    }
+
+    // Transcript
+    if (transcript.turns.length > transcriptRendered) {
+      const container = document.getElementById('transcript-content');
+      if (transcriptRendered === 0) container.innerHTML = '';
+      const newTurns = transcript.turns.slice(transcriptRendered);
+      newTurns.forEach(turn => {
+        const div = document.createElement('div');
+        div.className = `turn ${turn.speaker}`;
+        const toneBadge = turn.tone
+          ? `<span class="tone-badge" style="background:${TONE_COLORS[turn.tone.label]}22; color:${TONE_COLORS[turn.tone.label]}">${turn.tone.label}</span>`
+          : '';
+        div.innerHTML = `<div class="speaker">${turn.speaker} ${turn.speaker === 'doctor' ? toneBadge : ''}</div>${turn.text}`;
+        container.appendChild(div);
+      });
+      transcriptRendered = transcript.turns.length;
+      const tc = document.querySelector('.transcript');
+      tc.scrollTop = tc.scrollHeight;
+    }
+  }
+</script>
+</body>
+</html>

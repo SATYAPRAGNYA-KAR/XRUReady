@@ -1,0 +1,56 @@
+{
+  "case_id": "CHEST_PAIN_001",
+  "case_name": "Acute Chest Pain Presentation",
+  "patient": {
+    "name": "James Mitchell",
+    "age": 54,
+    "gender": "male",
+    "occupation": "accountant",
+    "chief_complaint": "chest pain"
+  },
+  "hpi": {
+    "onset": "Started about 3 hours ago while I was sitting at my desk",
+    "location": "Central chest, slightly left of center",
+    "duration": "It's been going on for about 3 hours now, comes in waves",
+    "characteristics": "Heavy, squeezing pressure — like someone sitting on my chest",
+    "aggravating_factors": "Walking or any exertion makes it worse",
+    "alleviating_factors": "Sitting still helps a little, but it doesn't fully go away",
+    "radiation": "Yes, the pain goes up into my left jaw and down my left arm",
+    "timing": "It started suddenly and has been mostly constant with occasional worsening",
+    "associated_symptoms": [
+      "Sweating profusely",
+      "Feeling slightly nauseous",
+      "A bit short of breath",
+      "Feeling light-headed"
+    ]
+  },
+  "past_medical_history": {
+    "conditions": ["hypertension", "type 2 diabetes", "hyperlipidemia"],
+    "medications": ["metformin", "lisinopril", "atorvastatin"],
+    "allergies": ["penicillin"],
+    "family_history": "Father had a heart attack at 58",
+    "social_history": "Non-smoker, occasional alcohol, sedentary desk job"
+  },
+  "vitals_if_asked": {
+    "blood_pressure": "158/94 mmHg",
+    "heart_rate": "102 bpm",
+    "respiratory_rate": "20 breaths/min",
+    "oxygen_saturation": "94% on room air",
+    "temperature": "37.1°C"
+  },
+  "ground_truth_diagnosis": "STEMI (ST-Elevation Myocardial Infarction)",
+  "correct_differential_diagnoses_ordered": [
+    "ST-Elevation Myocardial Infarction (STEMI)",
+    "Non-ST-Elevation Myocardial Infarction (NSTEMI)",
+    "Unstable Angina",
+    "Aortic Dissection",
+    "Pulmonary Embolism"
+  ],
+  "red_flag_symptoms": [
+    "radiation to left arm and jaw",
+    "diaphoresis",
+    "nausea",
+    "dyspnea",
+    "risk factors: HTN, DM, hyperlipidemia, family history"
+  ]
+}
