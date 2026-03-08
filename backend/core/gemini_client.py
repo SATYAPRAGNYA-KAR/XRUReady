@@ -27,7 +27,7 @@ class GeminiClient:
 
     async def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
         try:
-            model = self._get_model(temperature, 512)
+            model = self._get_model(temperature, 1024)
             response = await model.generate_content_async(prompt)
             return response.text.strip()
         except Exception as e:
@@ -37,7 +37,7 @@ class GeminiClient:
     async def generate_json(self, prompt: str, temperature: float = 0.2) -> dict:
         raw = ""
         try:
-            model = self._get_model(temperature, 1024)
+            model = self._get_model(temperature, 2048)
             response = await model.generate_content_async(prompt)
             raw = response.text.strip()
             raw = re.sub(r"^```(?:json)?\s*", "", raw)
@@ -52,7 +52,7 @@ class GeminiClient:
 
     async def generate_patient_dialogue(self, system_prompt: str) -> str:
         try:
-            model = self._get_model(0.85, 256)
+            model = self._get_model(0.85, 512)
             response = await model.generate_content_async(system_prompt)
             return response.text.strip()
         except Exception as e:
